@@ -6,6 +6,7 @@ import subprocess
 import uuid
 from copy import copy
 from itertools import chain
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from django.core.files import File
@@ -245,16 +246,19 @@ def make_absolute_paths(content):
         if not x['url'] or has_scheme.match(x['url']):
             continue
 
-        if not x['root'].endswith('/'):
-            x['root'] += '/'
+        if not isinstance(x['root'], Path):
+            if not x['root'].endswith('/'):
+                x['root'] += '/'
 
         occur_pattern = '''["|']({0}.*?)["|']'''
         occurences = re.findall(occur_pattern.format(x['url']), content)
         occurences = list(set(occurences))  # Remove dups
         for occur in occurences:
-            content = content.replace(occur,
-                                      pathname2fileurl(x['root']) +
-                                      occur[len(x['url']):])
+            if isinstance(x['root'], Path):
+                new_path = x['root'] / occur[len(x['url']):]
+            else:
+                new_path = x['root'] + occur[len(x['url']):]
+            content = content.replace(occur, pathname2fileurl(new_path))
 
     return content
 
