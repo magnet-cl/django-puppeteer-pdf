@@ -10,7 +10,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from django.core.files import File
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 
 try:
     from urllib.request import pathname2url
@@ -280,7 +280,7 @@ def render_to_temporary_file(template, context, request=None, mode='w+b',
     except AttributeError:
         content = loader.render_to_string(template, context)
 
-    content = smart_text(content)
+    content = smart_str(content)
     content = make_absolute_paths(content)
 
     try:
